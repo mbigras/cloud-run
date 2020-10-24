@@ -11,37 +11,51 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 try:
-	config = {
-		"SLACK_URL": os.environ["SLACK_URL"],
-		"APP_URL": os.environ["APP_URL"],
-	}
+    config = {
+        "SLACK_URL": os.environ["SLACK_URL"],
+        "APP_URL": os.environ["APP_URL"],
+    }
 except KeyError as e:
-	logger.error(f"Failed to set required env var {e}")
-	raise SystemExit(1)
+    logger.error(f"Failed to set required env var {e}")
+    raise SystemExit(1)
+
 
 @app.route("/")
 def up():
-	return "up\n"
+    return "up\n"
+
 
 @app.route("/version")
 def version():
-	return f"{VERSION}\n"
+    return f"{VERSION}\n"
+
 
 @app.route("/slack")
 def _slack():
-	logger.info("Got request to post App version to egfast #general slack channel")
-	data = {
-		"channel": "#general",
-		"text": f"<{config['APP_URL']}/version|App> is running version {VERSION}",
-	}
-	res = requests.post(config["SLACK_URL"], data=json.dumps(data), headers={'Content-Type': 'application/json'})
-	if res.ok:
-		logger.info("Successfully posted App version to slack")
-	else:
-		logger.error(f"Failed to post App version to slack reason is {res.reason}")
-	return res.text
+    logger.info("Got request to post App version to egfast #general slack channel")
+    res = post_slack_message(f"<{config['APP_URL']}/version|App> is running version {VERSION}")
+    if res.ok:
+        logger.info("Successfully posted App version to slack")
+    else:
+        logger.error(f"Failed to post App version to slack reason is {res.reason}")
+    return res.text
 
 
-if __name__ == '__main__':
-	logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO").upper())
-	app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 3000)))
+def post_slack_message(message):
+    data = {
+        "channel": "#general",
+        "text": message,
+    }
+    res = requests.post(
+        config["SLACK_URL"],
+        data=json.dumps(data),
+        headers={"Content-Type": "application/json"},
+    )
+    return res
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO").upper())
+    logger.info(f"Started App version {VERSION}")
+    post_slack_message(f"Started <{config['APP_URL']}/version|App> version {VERSION}")
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 3000)))

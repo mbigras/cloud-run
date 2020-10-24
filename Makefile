@@ -5,6 +5,7 @@ all:
 	@echo ""
 	@echo "The following are common commands:"
 	@echo ""
+	@echo "make tag"
 	@echo "make cloudbuild"
 	@echo "make deploy"
 
@@ -13,3 +14,6 @@ cloudbuild:
 
 deploy:
 	@scripts/deploy.sh
+
+tag:
+	@scripts/tag.sh
