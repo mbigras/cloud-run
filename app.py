@@ -33,7 +33,9 @@ def version():
 @app.route("/slack")
 def _slack():
     logger.info("Got request to post App version to egfast #general slack channel")
-    res = post_slack_message(f"<{config['APP_URL']}/version|App> is running version {VERSION}")
+    res = post_slack_message(
+        f"<{config['APP_URL']}/version|App> is running version {VERSION}"
+    )
     if res.ok:
         logger.info("Successfully posted App version to slack")
     else:
@@ -56,6 +58,4 @@ def post_slack_message(message):
 
 if __name__ == "__main__":
     logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO").upper())
-    logger.info(f"Started App version {VERSION}")
-    post_slack_message(f"Started <{config['APP_URL']}/version|App> version {VERSION}")
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 3000)))
